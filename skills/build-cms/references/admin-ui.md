@@ -50,11 +50,11 @@ The bar: a non-technical editor opens `/admin` and understands it without traini
 ## Auth
 
 - Reuse the app's auth with an `editor`/`admin` role when it exists; otherwise the interview decided single-password or accounts.
-- Every `/admin` route and every mutation endpoint checks the role **server-side**. Client-side route guards alone are a security hole.
+- Every `/admin` route and every mutation endpoint checks the role **server-side** — plus sessions, CSRF, upload hardening, and validation per [security.md](security.md). Those controls are written with each piece of UI/API as it's built.
 
 ## Implementation notes
 
-- Build inside the app (`/admin` route group) with the app's existing UI stack so styling and deploys are shared. Exclude admin routes from the sitemap and add `noindex`.
+- Build wherever the checkpoint-2 pick put it ([architecture.md](architecture.md)); when embedded, use a route group (`app/(admin)/admin`) with the app's existing UI stack so styling and deploys are shared. Admin routes are always `noindex` and excluded from the sitemap.
 - Validate writes server-side with a shared schema (e.g. Zod) — same rules the field editors enforce, so the API can't be used to bypass alt-text or length requirements.
 - Autosave drafts or warn on navigation with unsaved changes; editors lose work silently otherwise.
 - Media library: grid view, upload with automatic resize/compression to sane web sizes, edit alt text in place, show which entries use an asset before delete.

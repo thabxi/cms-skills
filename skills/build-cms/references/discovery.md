@@ -39,12 +39,13 @@ Ask in one round, pre-filled with discovery findings. Skip any question discover
 3. **Database** — *(if none exists)* Preference? Recommend based on hosting: serverless host → Postgres (Supabase/Neon); single server → SQLite. *(if one exists)* Confirm CMS tables live alongside it.
 4. **Publishing** — Draft → publish workflow, or edits go live immediately? Scheduled publishing needed?
 5. **Media** — Where should uploaded images live? (Existing bucket, Supabase Storage, S3, Cloudinary, local `public/`.)
-6. **Admin location** — `/admin` route inside the app (recommended: shares components and deploys), or a separate app?
-7. **Auth** — *(if app has auth)* Reuse it with an editor role? *(if not)* Single admin password, or proper accounts?
-8. **Localization** — One language or several? (Changes the schema shape — ask before modeling.)
-9. **Blog/collections growth** — Any new content types wanted beyond what the site shows today (blog, careers, changelog)? Retrofit is the cheap moment to add them.
-10. **SEO baseline** — Any existing SEO investment (Search Console, current rankings, redirect lists from an old site) the CMS must preserve?
+6. **Auth** — *(if app has auth)* Reuse it with an editor role? *(if not)* Single admin password, or proper accounts?
+7. **Localization** — One language or several? (Changes the schema shape — ask before modeling.)
+8. **Blog/collections growth** — Any new content types wanted beyond what the site shows today (blog, careers, changelog)? Retrofit is the cheap moment to add them.
+9. **SEO baseline** — Any existing SEO investment (Search Console, current rankings, redirect lists from an old site) the CMS must preserve?
+
+Do **not** ask where the admin should live or how it's deployed — that is the Phase 3 architecture proposal ([architecture.md](architecture.md)), presented as options after these answers are in.
 
 If the app is a **client-only SPA**, add: "CMS content rendered client-side won't be seen by search crawlers. Options: (a) prerender/SSG the public pages, (b) migrate to a framework with SSR (e.g. Vite React → React Router/Next), (c) accept weak SEO for now. Which do you want?" Do not silently pick one.
 
-Summarize the agreed architecture in 5–8 bullet points back to the user before starting Phase 3.
+Feed the answers, together with the discovery facts, straight into the Phase 3 architecture proposal — that pick is the last user input before the build runs to completion.
