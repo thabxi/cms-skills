@@ -26,7 +26,7 @@ Track the phases with your task list so progress is visible, and end with the Fi
 
 **Resumable state:** A long build must survive interruption, context loss, or a new session. `CMS-BUILD-STATE.md` at the repo root is the run's durable memory:
 
-- Create it the moment checkpoint 1 is answered; update it at checkpoint 2, at every phase-boundary commit, and whenever an autonomous decision is made.
+- Create it the moment checkpoint 1 is answered (start from [templates/CMS-BUILD-STATE.template.md](templates/CMS-BUILD-STATE.template.md)); update it at checkpoint 2, at every phase-boundary commit, and whenever an autonomous decision is made.
 - Sections: `Phase` (current phase + what's in progress), `Branch`, `Snapshot` (location), `Interview answers` (one line per question), `Architecture` (the confirmed pick), `Decisions made autonomously` (one line each — this feeds the Final Report directly), `Remaining` (unfinished items in the current phase).
 - **On every invocation, look for this file before anything else.** If it exists: the checkpoints are already answered — do not re-interview; verify the branch and `FIELD-MAP.md` match its claims, announce "resuming from Phase N", and continue. If it contradicts reality (branch missing, files absent), say so and reconcile from what actually exists before proceeding.
 - It lives in the phase commits on the build branch. In the final Phase 9 commit, delete it (and the snapshot) — `FIELD-MAP.md` stays as the durable contract, and a *finished* build is what extend mode detects on a future run.
@@ -50,7 +50,7 @@ Ask the question set in [references/discovery.md](references/discovery.md#interv
 Based on the detected stack, present 2–3 concrete options for **where the CMS lives and how it's accessed** (embedded `/admin`, separate admin app, embedded headless CMS; path vs subdomain; extra access layers), each with trade-offs and one marked recommended. → [references/architecture.md](references/architecture.md)
 
 ### Phase 4 — Content model + field map
-Design collections, singletons, the shared SEO field group, and global site settings from the front-end inventory. Write `FIELD-MAP.md` mapping every front-end field to its CMS field. → [references/content-modeling.md](references/content-modeling.md)
+Design collections, singletons, the shared SEO field group, and global site settings from the front-end inventory. Write `FIELD-MAP.md` mapping every front-end field to its CMS field — start from [templates/FIELD-MAP.template.md](templates/FIELD-MAP.template.md). → [references/content-modeling.md](references/content-modeling.md)
 
 ### Phase 5 — Build the CMS
 **Check [references/stacks/](references/stacks/) first** — if a playbook matches the detected stack (`nextjs-supabase.md`, `astro.md`, `sveltekit.md`, `vite-spa.md`), follow its file map, auth wiring, publishing pipeline, and gotchas for Phases 5–7; the generic references still govern what to build. Then: schema/migrations, validated content API, and the Webflow-like admin UI (sidebar of pages + collections, editor with Content/SEO tabs, SERP preview, media library, draft → publish). Security controls (authz on every endpoint, input validation, upload hardening, CSRF, headers) are written **with** this code, not after it. → [references/admin-ui.md](references/admin-ui.md), [references/security.md](references/security.md)
@@ -70,8 +70,8 @@ Work through the [references/security.md](references/security.md) checklist item
 ### Phase 9 — Verify + report
 - Every `FIELD-MAP.md` row is `wired`; grep confirms no leftover hardcoded copy.
 - **Content parity:** diff each route's rendered output against the Phase 6 snapshot — visible content must be identical. The only acceptable deltas are intended additions (new meta/OG tags, JSON-LD); any changed or missing copy is a seeding bug, not a note for the report.
-- Crawler checks: `curl` a page as a bot — content, meta tags, and JSON-LD present in raw HTML; sitemap valid and complete; changed slug 301s; `/admin` blocked and noindexed.
-- Security probes from [references/security.md](references/security.md#verification): unauthenticated mutation rejected, upload of disguised file rejected, XSS payload in rich text rendered inert, no secrets in the client bundle.
+- Run **[scripts/verify.sh](scripts/verify.sh)** against the running site — it automates the crawler checks (raw-HTML content/meta/JSON-LD, sitemap, robots, soft-404), admin lockdown, unauthenticated-mutation and slug-redirect probes, and the client-bundle secret grep. Exit code = failure count; paste its output into the report.
+- Manual security probes it can't do (from [references/security.md](references/security.md#verification)): disguised-file upload rejected, XSS payload in rich text rendered inert, draft URL blocked without a preview token.
 - Final commit: delete `CMS-BUILD-STATE.md` and `.cms-snapshot/` — `FIELD-MAP.md` remains as the durable contract.
 - Deliver the Final Report (the "Decisions made" section comes straight from the state file's log).
 

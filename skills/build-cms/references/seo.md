@@ -35,7 +35,9 @@ Every item here ships with the CMS. Editors control SEO from the admin UI; nothi
 
 `hreflang` alternates on every page, locale-suffixed sitemap entries, per-locale SEO fields, and locale-aware canonicals.
 
-## Verification (part of Phase 7)
+## Verification (final phase)
+
+Automated by [../scripts/verify.sh](../scripts/verify.sh); the underlying checks:
 
 ```bash
 # Meta + content present in raw HTML (as a crawler sees it)

@@ -34,7 +34,7 @@ Naming: field names mirror what the editor sees on the page (`hero_headline`, `c
 
 ## FIELD-MAP.md (required artifact)
 
-Create it at the repo root at the end of Phase 3, before any build code. It is the contract for the whole build and the Phase 7 checklist.
+Create it at the repo root before any build code — start from [../templates/FIELD-MAP.template.md](../templates/FIELD-MAP.template.md). It is the contract for the whole build and the final verification checklist. For the shared validation schemas backing these field types (slug pattern, required alt text, SEO group, redirect targets), adapt [../templates/cms-schemas.ts](../templates/cms-schemas.ts).
 
 ```markdown
 # Field Map

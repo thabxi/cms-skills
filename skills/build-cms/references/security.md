@@ -48,7 +48,7 @@ An admin panel is a privileged write path into a production site. Every applicab
 
 ## Verification probes (Phase 9) {#verification}
 
-Run these and record results in the Final Report:
+The curl-based probes below are automated in [../scripts/verify.sh](../scripts/verify.sh) — run it (`./verify.sh https://site.tld --api-probe /api/cms/pages --changed-slug /old-slug --dist .next/static`) and record its output in the Final Report. Individually they are:
 
 ```bash
 # Unauthenticated mutation → 401/403, not 200
