@@ -15,11 +15,12 @@ Establish these facts, with file evidence for each:
 | Hosting | `vercel.json`, `netlify.toml`, Dockerfile, `wrangler.toml`, CI workflows |
 | Media handling | Existing upload code, `public/` image usage, image CDN references |
 | i18n | Locale routing, i18n libraries, hardcoded multi-language strings |
-| **Existing content layer** | CMS dependencies (`sanity`, `contentful`, `@payloadcms/*`, `strapi`, `directus`, `tinacms`, `keystatic`, WP REST calls), `cms_`-prefixed tables in schema/migrations, or a `FIELD-MAP.md` from a previous run |
+| **Existing content layer** | CMS dependencies (`sanity`, `contentful`, `@payloadcms/*`, `strapi`, `directus`, `tinacms`, `keystatic`, WP REST calls), `cms_`-prefixed tables in schema/migrations, or `CMS-BUILD-STATE.md` / `FIELD-MAP.md` from a previous run |
 
 ### If an existing content layer is found
 
-- **Previous `/build-cms` build** (`FIELD-MAP.md` + `cms_` tables): switch to **extend mode**. Diff the field map against the current front end; the run's scope is only new/changed fields, pages, and collections. Reuse the existing schema, admin, and conventions; never drop or rebuild existing `cms_` tables or re-ask settled interview questions — confirm the delta with the user and proceed.
+- **In-progress `/build-cms` run** (`CMS-BUILD-STATE.md` present): this is a **resume**, not a new build — the checkpoints are already answered. Follow the Resumable state rules in SKILL.md and continue from the recorded phase.
+- **Finished `/build-cms` build** (`FIELD-MAP.md` + `cms_` tables, no state file): switch to **extend mode**. Diff the field map against the current front end; the run's scope is only new/changed fields, pages, and collections. Reuse the existing schema, admin, and conventions; never drop or rebuild existing `cms_` tables or re-ask settled interview questions — confirm the delta with the user and proceed.
 - **Third-party CMS** (Sanity, Contentful, WordPress, Payload, Strapi, …): do not build a competing CMS. Lead the interview with the finding and let the user choose: extend the existing CMS to cover the unmanaged content, migrate off it into this build (content migration becomes part of Phase 6 seeding), or scope this build strictly to the parts the existing CMS doesn't manage.
 
 ### Content inventory

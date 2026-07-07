@@ -24,6 +24,13 @@ Track the phases with your task list so progress is visible, and end with the Fi
 
 **Branch safety:** Phases 1–3 are read-only. Before the first code change (Phase 4), create a `cms/build` branch and commit at every phase boundary — a failed run must be one checkout away from undone. Never build on the default branch, and never touch files unrelated to the CMS retrofit.
 
+**Resumable state:** A long build must survive interruption, context loss, or a new session. `CMS-BUILD-STATE.md` at the repo root is the run's durable memory:
+
+- Create it the moment checkpoint 1 is answered; update it at checkpoint 2, at every phase-boundary commit, and whenever an autonomous decision is made.
+- Sections: `Phase` (current phase + what's in progress), `Branch`, `Snapshot` (location), `Interview answers` (one line per question), `Architecture` (the confirmed pick), `Decisions made autonomously` (one line each — this feeds the Final Report directly), `Remaining` (unfinished items in the current phase).
+- **On every invocation, look for this file before anything else.** If it exists: the checkpoints are already answered — do not re-interview; verify the branch and `FIELD-MAP.md` match its claims, announce "resuming from Phase N", and continue. If it contradicts reality (branch missing, files absent), say so and reconcile from what actually exists before proceeding.
+- It lives in the phase commits on the build branch. In the final Phase 9 commit, delete it (and the snapshot) — `FIELD-MAP.md` stays as the durable contract, and a *finished* build is what extend mode detects on a future run.
+
 ## The Iron Rules
 
 1. **Interview before you build.** Complete Phases 1–3 before writing any schema or admin code. Do not scaffold "a reasonable CMS" and adjust later — the answers change the architecture (auth, database, rendering, publishing).
@@ -34,7 +41,7 @@ Track the phases with your task list so progress is visible, and end with the Fi
 ## Workflow
 
 ### Phase 1 — Discovery (read, don't ask yet)
-Analyze the codebase: framework, rendering mode (SSG/SSR/SPA), database (or none), hosting, existing auth, media handling, and a full inventory of routes and hardcoded content. → [references/discovery.md](references/discovery.md)
+First check for `CMS-BUILD-STATE.md` — if present, resume that run instead of starting over (see Resumable state above). Otherwise analyze the codebase: framework, rendering mode (SSG/SSR/SPA), database (or none), hosting, existing auth, media handling, and a full inventory of routes and hardcoded content. → [references/discovery.md](references/discovery.md)
 
 ### Phase 2 — Interview *(checkpoint 1)*
 Ask the question set in [references/discovery.md](references/discovery.md#interview), pre-filled with discovery findings. Covers editors, scope, database, publishing workflow, media, auth, localization, new content types, SEO baseline. One focused round.
@@ -49,7 +56,7 @@ Design collections, singletons, the shared SEO field group, and global site sett
 Schema/migrations, validated content API, and the Webflow-like admin UI (sidebar of pages + collections, editor with Content/SEO tabs, SERP preview, media library, draft → publish). Security controls (authz on every endpoint, input validation, upload hardening, CSRF, headers) are written **with** this code, not after it. → [references/admin-ui.md](references/admin-ui.md), [references/security.md](references/security.md)
 
 ### Phase 6 — Wire the front end
-Before touching the first page, **snapshot the site**: run the app and save each route's rendered HTML (curl each route to a file) — this is the Phase 9 parity baseline. Then, page by page: **seed first, wire second** — insert the page's current hardcoded values into the CMS, then replace the hardcoded code with CMS reads, updating `FIELD-MAP.md` status as you go. Seeding lives in a committed seed script/migration, not ad-hoc inserts, so fresh environments get the content too. Preserve (or introduce) server rendering — CMS content fetched client-side is invisible to crawlers.
+Before touching the first page, **snapshot the site**: run the app and save each route's rendered HTML (curl each route into `.cms-snapshot/`, committed on the build branch so a resumed session still has it) — this is the Phase 9 parity baseline. Then, page by page: **seed first, wire second** — insert the page's current hardcoded values into the CMS, then replace the hardcoded code with CMS reads, updating `FIELD-MAP.md` status as you go. Seeding lives in a committed seed script/migration, not ad-hoc inserts, so fresh environments get the content too. Preserve (or introduce) server rendering — CMS content fetched client-side is invisible to crawlers.
 
 ### Phase 7 — SEO layer
 Implement the full checklist in [references/seo.md](references/seo.md): meta/OG editing, sitemap, robots, JSON-LD, canonicals, redirect manager with automatic slug-change redirects, alt-text enforcement.
@@ -65,7 +72,8 @@ Work through the [references/security.md](references/security.md) checklist item
 - **Content parity:** diff each route's rendered output against the Phase 6 snapshot — visible content must be identical. The only acceptable deltas are intended additions (new meta/OG tags, JSON-LD); any changed or missing copy is a seeding bug, not a note for the report.
 - Crawler checks: `curl` a page as a bot — content, meta tags, and JSON-LD present in raw HTML; sitemap valid and complete; changed slug 301s; `/admin` blocked and noindexed.
 - Security probes from [references/security.md](references/security.md#verification): unauthenticated mutation rejected, upload of disguised file rejected, XSS payload in rich text rendered inert, no secrets in the client bundle.
-- Deliver the Final Report.
+- Final commit: delete `CMS-BUILD-STATE.md` and `.cms-snapshot/` — `FIELD-MAP.md` remains as the durable contract.
+- Deliver the Final Report (the "Decisions made" section comes straight from the state file's log).
 
 ## Final Report (required structure)
 
@@ -96,6 +104,8 @@ End the run with exactly these sections:
 
 - Writing schema or admin code before checkpoint 2 is answered
 - A third round of questions to the user
+- Re-asking interview questions that `CMS-BUILD-STATE.md` already answers
+- A phase commit without a matching state-file update
 - A page whose content you never inventoried
 - "I'll map the remaining fields after the build works"
 - SEO fields that exist in the schema but render nowhere
