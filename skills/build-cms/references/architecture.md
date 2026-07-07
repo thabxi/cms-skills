@@ -48,6 +48,10 @@ Include in the proposal as one line per option rather than extra questions:
 | Plain static HTML | B + publish-triggered static regeneration | B |
 | Supabase already in stack | A with RLS on `cms_` tables, B | A |
 
+## After the pick
+
+Load the matching playbook from [stacks/](stacks/) — `nextjs-supabase.md`, `astro.md`, `sveltekit.md`, or `vite-spa.md`. It prescribes the concrete file map, auth wiring, publishing pipeline, SEO endpoints, and stack-specific gotchas for Phases 4–7. No playbook for the stack? Build from the generic references and note it in the Final Report.
+
 ## How to present it
 
 One message: recap 3–5 discovery facts ("Next.js 15 App Router, Supabase Postgres, deployed on Vercel, existing Supabase auth"), then the applicable options with 2–3 trade-off bullets each and the recommendation flagged. After the user picks, confirm in a single line — "Building Option A: `/admin` inside the app, reusing Supabase auth with an `editor` role, media in Supabase Storage" — and start Phase 4. That confirmation line is the last thing said to the user before the Final Report.
