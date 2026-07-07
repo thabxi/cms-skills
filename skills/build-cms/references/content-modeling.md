@@ -68,3 +68,4 @@ Every route from the inventory gets a section — including its SEO fields. If a
 - Slugs: unique, URL-safe, auto-generated from title but editable. On slug change, insert a row into `cms_redirects` (see seo.md) in the same transaction.
 - Media: one `cms_media` table (url, alt, width, height, mime, size); image fields reference it rather than storing bare URLs.
 - Migrations go through the app's existing migration tool (Prisma/Drizzle/Supabase migrations). Never mutate existing app tables.
+- **Seed content is part of the schema deliverable:** a committed seed script/migration populates every field with the site's current hardcoded values (captured in the Phase 1 inventory), so the wired site renders identically and fresh environments aren't empty.

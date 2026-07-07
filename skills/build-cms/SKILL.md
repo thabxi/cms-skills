@@ -22,10 +22,12 @@ After the architecture pick, run Phases 4–9 to completion **without asking any
 
 Track the phases with your task list so progress is visible, and end with the Final Report (format below) — never with "let me know if you want me to continue."
 
+**Branch safety:** Phases 1–3 are read-only. Before the first code change (Phase 4), create a `cms/build` branch and commit at every phase boundary — a failed run must be one checkout away from undone. Never build on the default branch, and never touch files unrelated to the CMS retrofit.
+
 ## The Iron Rules
 
 1. **Interview before you build.** Complete Phases 1–3 before writing any schema or admin code. Do not scaffold "a reasonable CMS" and adjust later — the answers change the architecture (auth, database, rendering, publishing).
-2. **No unmapped fields.** Produce `FIELD-MAP.md` before building. Every user-visible string, image, link, and list on every page appears in it. The build is done only when every row is `wired`.
+2. **No unmapped fields, no empty fields.** Produce `FIELD-MAP.md` before building. Every user-visible string, image, link, and list on every page appears in it, and every field is **seeded with the site's current content** when wired — the retrofit must not change what visitors see. The build is done only when every row is `wired`.
 3. **SEO is built, not stubbed.** Editable meta/OG per page, auto-regenerating sitemap, structured data, canonicals, and slug-change redirects ship with the CMS — see [references/seo.md](references/seo.md).
 4. **Security is built in, not reviewed in.** Every applicable control in [references/security.md](references/security.md) ships with the build, and Phase 9 actively probes for the failures it lists. An admin panel is an attack surface on a production site.
 
@@ -47,7 +49,7 @@ Design collections, singletons, the shared SEO field group, and global site sett
 Schema/migrations, validated content API, and the Webflow-like admin UI (sidebar of pages + collections, editor with Content/SEO tabs, SERP preview, media library, draft → publish). Security controls (authz on every endpoint, input validation, upload hardening, CSRF, headers) are written **with** this code, not after it. → [references/admin-ui.md](references/admin-ui.md), [references/security.md](references/security.md)
 
 ### Phase 6 — Wire the front end
-Replace hardcoded content with CMS reads, page by page, updating `FIELD-MAP.md` status as you go. Preserve (or introduce) server rendering — CMS content fetched client-side is invisible to crawlers.
+Before touching the first page, **snapshot the site**: run the app and save each route's rendered HTML (curl each route to a file) — this is the Phase 9 parity baseline. Then, page by page: **seed first, wire second** — insert the page's current hardcoded values into the CMS, then replace the hardcoded code with CMS reads, updating `FIELD-MAP.md` status as you go. Seeding lives in a committed seed script/migration, not ad-hoc inserts, so fresh environments get the content too. Preserve (or introduce) server rendering — CMS content fetched client-side is invisible to crawlers.
 
 ### Phase 7 — SEO layer
 Implement the full checklist in [references/seo.md](references/seo.md): meta/OG editing, sitemap, robots, JSON-LD, canonicals, redirect manager with automatic slug-change redirects, alt-text enforcement.
@@ -60,6 +62,7 @@ Work through the [references/security.md](references/security.md) checklist item
 
 ### Phase 9 — Verify + report
 - Every `FIELD-MAP.md` row is `wired`; grep confirms no leftover hardcoded copy.
+- **Content parity:** diff each route's rendered output against the Phase 6 snapshot — visible content must be identical. The only acceptable deltas are intended additions (new meta/OG tags, JSON-LD); any changed or missing copy is a seeding bug, not a note for the report.
 - Crawler checks: `curl` a page as a bot — content, meta tags, and JSON-LD present in raw HTML; sitemap valid and complete; changed slug 301s; `/admin` blocked and noindexed.
 - Security probes from [references/security.md](references/security.md#verification): unauthenticated mutation rejected, upload of disguised file rejected, XSS payload in rich text rendered inert, no secrets in the client bundle.
 - Deliver the Final Report.
@@ -84,6 +87,8 @@ End the run with exactly these sections:
 | App already has a database | CMS tables live alongside it, prefixed `cms_` — never restructure app tables |
 | User wants only some pages editable | Fine — those pages' fields must be 100% mapped; note exclusions in `FIELD-MAP.md` |
 | Existing auth in the app | Reuse it with an editor/admin role; don't build a second login |
+| A previous `/build-cms` run detected (`FIELD-MAP.md`, `cms_` tables) | **Extend mode**: diff the field map against the current front end and add only what's missing — never drop or rebuild existing `cms_` tables |
+| A third-party CMS detected (Sanity, Contentful, WordPress, Payload, Strapi…) | Don't build a competing CMS — surface it at the interview: extend it, migrate off it, or scope this build to the unmanaged parts. User decides |
 | User can't decide at checkpoint 2 | Take the recommended option, say so, proceed |
 | Mid-build uncertainty (naming, library choice, field grouping) | Decide using reference defaults, log it in the report — do not ask |
 
@@ -96,6 +101,9 @@ End the run with exactly these sections:
 - SEO fields that exist in the schema but render nowhere
 - CMS content that only appears after client-side JavaScript runs
 - A mutation endpoint whose only protection is a client-side route guard
+- A second CMS being scaffolded next to one that already exists
+- A wired page rendering different copy than the pre-build snapshot
+- CMS code being written on the default branch
 - Ending the run without the Final Report
 
 ## Common Mistakes
@@ -108,4 +116,5 @@ End the run with exactly these sections:
 | Admin UI lists raw DB rows | Webflow-like: human labels, grouped fields, SERP preview, publish state |
 | Rich text stored as raw HTML, rendered unsanitized | Store structured rich text, or sanitize server-side with a strict allowlist |
 | Security added as a final review pass | Controls are written with each endpoint/upload/form as it's built (Iron Rule 4) |
+| Fields wired but the database left empty | Seed first, wire second — the site must render its current content from the CMS immediately |
 | Service-role/DB credentials reachable from the client bundle | Server-only env access; verify by grepping the built client output |
