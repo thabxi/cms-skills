@@ -15,7 +15,7 @@ Works with your existing stack: the CMS lives in your app and your database (Nex
 ## Install
 
 ```bash
-npx skills add intelligentcare/cms-skills
+npx skills add thabxi/cms-skills
 ```
 
 Or install manually — copy `skills/cms-builder/` into your agent's skills directory:
