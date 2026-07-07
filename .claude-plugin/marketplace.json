@@ -1,0 +1,21 @@
+{
+  "name": "cms-skills",
+  "owner": {
+    "name": "thabxi",
+    "url": "https://github.com/thabxi"
+  },
+  "plugins": [
+    {
+      "name": "build-cms",
+      "source": "./",
+      "description": "Fire-and-forget skill that retrofits a secure, SEO-ready, Webflow-like CMS onto any vibe-coded app. Invoke /build-cms: it analyzes your architecture, asks one round of questions, proposes where the CMS should live, then builds schema, admin panel, front-end wiring, SEO, and security hardening end to end.",
+      "version": "1.0.0",
+      "author": {
+        "name": "thabxi"
+      },
+      "homepage": "https://github.com/thabxi/cms-skills",
+      "license": "MIT",
+      "keywords": ["cms", "seo", "admin-panel", "webflow", "vibe-coding", "content-management"]
+    }
+  ]
+}
